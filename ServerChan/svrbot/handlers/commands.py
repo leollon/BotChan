@@ -1,8 +1,15 @@
+from datetime import datetime
+from math import floor
+from pathlib import Path
+
 import psutil
 from telegram.ext import CommandHandler
 
 from .. import dispatcher
+from ..conf import settings
 from .decorators import make_handler
+
+proc_base = Path(getattr(settings, "PROC_DIR", "/proc"))
 
 
 @dispatcher.add_handler
@@ -28,7 +35,28 @@ def resource(update, context):
 @dispatcher.add_handler
 @make_handler(CommandHandler, "uptime")
 def uptime(update, context):
-    context.bot.send_message(chat_id=update.effective_chat.id, text="uptime")
+    try:
+        with open((proc_base / 'uptime').as_posix(), 'r') as fp:
+            uptime = fp.read()
+        uptime = floor(float(uptime.split(' ')[0]))
+        now = datetime.now().strftime("%H:%M:%S")
+        day = uptime / (24 * 3600)
+        hours = int(uptime / 3600) % 24
+        minutes = int(uptime / 60) % 60
+        seconds = int(uptime % 60)
+        sent_text = "%s, up %d %s %d:%d:%d" % (now, day, 'days' if day > 1 else 'day', hours, minutes, seconds)
+    except FileNotFoundError:
+        sent_text = 'None'
+    context.bot.send_message(chat_id=update.effective_chat.id, text=sent_text)
+
+
+@dispatcher.add_handler
+@make_handler(CommandHandler, "load")
+def load(update, context):
+    loadavg = 'None'
+    with open((proc_base / "loadavg").as_posix(), 'r') as fp:
+        loadavg = fp.read().strip('\n')
+    context.bot.send_message(chat_id=update.effective_chat.id, text=loadavg)
 
 
 @dispatcher.add_handler

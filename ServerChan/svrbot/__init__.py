@@ -7,4 +7,4 @@ dispatcher = updater.dispatcher
 
 from .handlers.commands import (last_24_hours,  # noqa: F401, E402, isort:skip
                                 last_ten_mins, ping, resource, start, today,
-                                uptime)
+                                uptime, load)
