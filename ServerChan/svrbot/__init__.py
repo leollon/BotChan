@@ -2,9 +2,19 @@ from os import environ
 
 from telegram.ext import Updater
 
-updater = Updater(token=environ.get("tg_bot_token"), use_context=True)
+from .conf import settings
+
+updater = Updater(
+    token=environ.get("tg_bot_token"), use_context=True, request_kwargs=getattr(settings, "REQUEST_KWARGS", {})
+)
 dispatcher = updater.dispatcher
 
 from .handlers.commands import (last_24_hours,  # noqa: F401, E402, isort:skip
-                                last_ten_mins, ping, resource, start, today,
-                                uptime, load)
+    last_ten_mins,
+    ping,
+    resource,
+    start,
+    today,
+    uptime,
+    load,
+)

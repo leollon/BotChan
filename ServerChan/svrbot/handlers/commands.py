@@ -1,7 +1,3 @@
-from datetime import datetime
-from math import floor
-from pathlib import Path
-
 import psutil
 from telegram.ext import CommandHandler
 
@@ -9,6 +5,9 @@ from .. import dispatcher
 from ..conf import settings
 from .decorators import make_handler
 
+Path = getattr(settings, "Path")
+floor = getattr(settings, "floor")
+datetime = getattr(settings, "datetime")
 proc_base = Path(getattr(settings, "PROC_DIR", "/proc"))
 
 
