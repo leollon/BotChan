@@ -19,9 +19,8 @@ class NginxLogEntry(BaseModel):
     cdn_ip = BooleanField(default=True)
     status_code = FixedCharField(max_length=6)
     request_time = FloatField()
-    url = TextField()
-    local_time = DateTimeField()
-    user_agent = TextField()
+    uri = TextField()
+    request_datetime = DateTimeField()
 
     class Meta:
         table_name = 'nginx_log_entry'
