@@ -18,7 +18,7 @@ def resource(update, context):
     swap_memory = psutil.swap_memory()
     virtual_memory = psutil.virtual_memory()
     mem_total = virtual_memory.total / (4 ** 10)
-    mem_used = virtual_memory.used / (4 ** 10)
+    mem_used = mem_total - (virtual_memory.available / 4 ** 10)
     swap_total = swap_memory.total / (4 ** 10)
     swap_used = swap_memory.used / (4 ** 10)
     sent_text = "CPU: %0.3f%%\nMemory: %0.3fMB / %0.3fMB\nSwap: %0.3fMB / %0.3fMB" % (
