@@ -12,9 +12,9 @@ REQUEST_KWARGS = {
 }
 
 psql_db = PostgresqlDatabase(
-    database=environ.get("PG_USER_DB"),
-    user=environ.get("PG_USER"),
-    passpard=environ.get("PG_USER_PASSWORD"),
+    database=environ.get("POSTGRES_DB"),
+    user=environ.get("POSTGRES_USER"),
+    password=environ.get("POSTGRES_PASSWORD"),
     host=environ.get("POSTGRES_HOST"),
     port=int(environ.get("POSTGRES_PORT"))
 )
