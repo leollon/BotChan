@@ -13,7 +13,7 @@ class NginxLogEntry(Model):
     status_code = FixedCharField(max_length=6)
     request_time = FloatField()
     uri = TextField()
-    request_datetime = DateTimeField()
+    request_datetime = DateTimeField(formats="%d/%m/%Y:%H:%M:%S")
 
     class Meta:
         database = psql_db

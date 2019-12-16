@@ -2,6 +2,7 @@ import psutil
 from telegram.ext import CommandHandler
 
 from .. import dispatcher
+from ..analysis.process_log_entry import AnalyseDatastructure
 from ..conf import settings
 from .decorators import make_handler
 
@@ -79,7 +80,8 @@ def last_24_hours(update, context):
 @dispatcher.add_handler
 @make_handler(CommandHandler, "last10mins")
 def last_ten_mins(update, context):
-    context.bot.send_message(chat_id=update.effective_chat.id, text="last ten minutes.")
+    sent_text = AnalyseDatastructure().start_analyse()
+    context.bot.send_message(chat_id=update.effective_chat.id, text=sent_text)
 
 
 @dispatcher.add_handler

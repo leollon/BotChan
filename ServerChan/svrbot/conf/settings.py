@@ -20,8 +20,11 @@ psql_db = PostgresqlDatabase(
 )
 
 LOG_FILES_LIST = set("/home/monkey/Desktop/Projects/tools/BotChan/blog.access.log")
-ONE_DAY = 24 * 3600
-SEVEN_DAYS = 7 * ONE_DAY
+TEN_MINUTES = 10 * 60 * 1.0
+ONE_DAY = 24 * 3600 * 1.0
+SEVEN_DAYS = 7 * ONE_DAY * 1.0
+HALF_MONTH = 2 * SEVEN_DAYS * 1.0
+THIRTY_DAYS = 30 * ONE_DAY * 1.0
 STATUS_CODE_SERACH = re.compile(r"\"{1}[1-5]{1}[0-9]{2}\"{1}").search
 REQUEST_SEARCH = re.compile(r"(GET|POST|PUT|DELETE|PATCH|OPTIONS|TRACE|CONNECT){1}[\w\d\s/%\-\.]+").search
 DATETIME_SEARCH = re.compile(r"(\d{2}/\w{3}/\d{4}:\d{2}:\d{2}:\d{2})").search  # 09/Dec/2019:11:02:41
