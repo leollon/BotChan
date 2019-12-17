@@ -2,14 +2,20 @@ import psutil
 from telegram.ext import CommandHandler
 
 from .. import dispatcher
-from ..analysis.process_log_entry import AnalyseDatastructure
+from ..analysis.process_log_entry import AnalyseLogs
 from ..conf import settings
 from .decorators import make_handler
 
 Path = getattr(settings, "Path")
 floor = getattr(settings, "floor")
 datetime = getattr(settings, "datetime")
+time = getattr(settings, "time")
 proc_base = Path(getattr(settings, "PROC_DIR", "/proc"))
+ten_mins = getattr(settings, "TEN_MINUTES")
+one_day = getattr(settings, "ONE_DAY")
+seven_days = getattr(settings, "SEVEN_DAYS")
+half_month = getattr(settings, "HALF_MONTH")
+thirty_days = getattr(settings, "THIRTY_DAYS")
 
 
 @dispatcher.add_handler
@@ -74,17 +80,25 @@ def start(update, context):
 @dispatcher.add_handler
 @make_handler(CommandHandler, "last24hours")
 def last_24_hours(update, context):
-    context.bot.send_message(chat_id=update.effective_chat.id, text="last twenty four hours.")
+    sent_text = AnalyseLogs().start_analyse(datetime_range=one_day)
+    context.bot.send_message(chat_id=update.effective_chat.id, text=sent_text)
 
 
 @dispatcher.add_handler
 @make_handler(CommandHandler, "last10mins")
-def last_ten_mins(update, context):
-    sent_text = AnalyseDatastructure().start_analyse()
+def last_10_mins(update, context):
+    sent_text = AnalyseLogs().start_analyse(datetime_range=ten_mins)
     context.bot.send_message(chat_id=update.effective_chat.id, text=sent_text)
 
 
 @dispatcher.add_handler
 @make_handler(CommandHandler, "today")
 def today(update, context):
-    context.bot.send_message(chat_id=update.effective_chat.id, text="today visited.")
+    end_datetime = datetime.now()
+    this_year = end_datetime.year
+    this_month = end_datetime.month
+    this_day = end_datetime.day
+    beg_datetime = datetime(year=this_year, month=this_month, day=this_day, hour=0, minute=0, second=0).timestamp()
+    end_datetime = end_datetime.timestamp()
+    sent_text = AnalyseLogs().start_analyse(datetime_range=end_datetime-beg_datetime)
+    context.bot.send_message(chat_id=update.effective_chat.id, text=sent_text)

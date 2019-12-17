@@ -15,7 +15,7 @@ datetime_search = getattr(settings, "DATETIME_SEARCH")
 request_time_search = getattr(settings, "REQUEST_TIME_SEARCH")
 log_files_list = getattr(settings, "LOG_FILES_LIST")
 
-last_ten_mins = getattr(settings, "TEN_MINUTES")
+ten_mins = getattr(settings, "TEN_MINUTES")
 one_day = getattr(settings, "ONE_DAY")
 seven_days = getattr(settings, "SEVEN_DAYS")
 HALF_MONTH = getattr(settings, "HALF_MONTH")
@@ -45,9 +45,9 @@ class LogEntry(object):
         request_time = request_time_search(line).group(0).replace('"', '')
         return (cdn_ip, real_ip, request, status_code, request_datetime, request_time)
 
-    def get_data_from_logs(self, filename, datetime_range=last_ten_mins):
+    def get_data_from_logs(self, filename, datetime_range=ten_mins):
         last_access_datetime_timestamp = None
-        for line in self.open_file(filename):
+        for line in self.reverse_open_file(filename):
             method, uri = "Unknown", "Unknown"
             if "HEAD" not in line and "assets/" not in line:
                 cdn_ip, real_ip, request, status_code, request_datetime, request_time = self.evaluate_line(line)
@@ -56,7 +56,7 @@ class LogEntry(object):
                     str(self.month_map[request_datetime[3:6]])
                 )
                 current_request_datetime_timestamp = dt_strptime(request_datetime, "%d/%m/%Y:%H:%M:%S").timestamp()
-                if not last_access_datetime_timestamp:
+                if last_access_datetime_timestamp is None:
                     last_access_datetime_timestamp = dt_strptime(request_datetime, "%d/%m/%Y:%H:%M:%S").timestamp()
                 if request != "Unknown":
                     method, uri = request.split(' ')[0], request.split(' ')[1]
@@ -125,21 +125,25 @@ class LogEntry(object):
         ).save()
 
 
-class AnalyseDatastructure(LogEntry):
+class AnalyseLogs(LogEntry):
 
-    def start_analyse(self):
-        self.get_data_from_logs(filename="/home/monkey/Desktop/Projects/tools/BotChan/blog.access.log")
-        with open("result.json", 'w') as fp:
-            fp.write(json.dumps(self.data))
-        twoxx = len(self.data.pop('2xx'))
-        threexx = len(self.data.pop('3xx'))
-        fourxx = len(self.data.pop('4xx'))
+    def start_analyse(self, datetime_range=ten_mins):
+        self.get_data_from_logs(
+            filename="/home/monkey/Desktop/Projects/tools/BotChan/blog.access.log",
+            datetime_range=datetime_range
+        )
+        twoxx = len(self.data.pop('2xx', []))
+        threexx = len(self.data.pop('3xx', []))
+        fourxx = len(self.data.pop('4xx', []))
         visited_ips = Counter()
         not_through_cdn = Counter()
         for key in self.data.keys():
             visited_ips.update(Counter(self.data.get(key).get("real_ips")))
             not_through_cdn.update(Counter(self.data.get(key, '').get("not_cdn", {}).get("real_ips", [])))
+        visited_ips = json.dumps(dict(visited_ips.most_common(10)), indent=4)
+        not_through_cdn = json.dumps(dict(not_through_cdn.most_common(1)), indent=4)
         result = "2xx: {0}\n\n3xx: {1}\n\n4xx: {2}\n\nvisited_ips: {3}\n\nnot_through_cdn: {4}\n\n".format(
-            twoxx, threexx, fourxx, visited_ips.most_common(10), not_through_cdn.most_common(10)
+            twoxx, threexx, fourxx, visited_ips, not_through_cdn
         )
+        self.data.clear()
         return result
