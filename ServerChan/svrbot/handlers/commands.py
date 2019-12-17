@@ -5,6 +5,7 @@ from .. import dispatcher
 from ..analysis.process_log_entry import AnalyseLogs
 from ..conf import settings
 from .decorators import make_handler
+from .utils import check_domain
 
 Path = getattr(settings, "Path")
 floor = getattr(settings, "floor")
@@ -80,25 +81,37 @@ def start(update, context):
 @dispatcher.add_handler
 @make_handler(CommandHandler, "last24hours")
 def last_24_hours(update, context):
-    sent_text = AnalyseLogs().start_analyse(datetime_range=one_day)
+    (domain, is_exists) = check_domain(context)
+    if is_exists:
+        sent_text = AnalyseLogs().start_analyse(domain=domain, datetime_range=one_day)
+    else:
+        sent_text = "There is no the domain's log to be analysed."
     context.bot.send_message(chat_id=update.effective_chat.id, text=sent_text)
 
 
 @dispatcher.add_handler
 @make_handler(CommandHandler, "last10mins")
 def last_10_mins(update, context):
-    sent_text = AnalyseLogs().start_analyse(datetime_range=ten_mins)
+    (domain, is_exists) = check_domain(context)
+    if is_exists:
+        sent_text = AnalyseLogs().start_analyse(domain=domain, datetime_range=ten_mins)
+    else:
+        sent_text = "There is no the domain's log to be analysed."
     context.bot.send_message(chat_id=update.effective_chat.id, text=sent_text)
 
 
 @dispatcher.add_handler
 @make_handler(CommandHandler, "today")
 def today(update, context):
-    end_datetime = datetime.now()
-    this_year = end_datetime.year
-    this_month = end_datetime.month
-    this_day = end_datetime.day
-    beg_datetime = datetime(year=this_year, month=this_month, day=this_day, hour=0, minute=0, second=0).timestamp()
-    end_datetime = end_datetime.timestamp()
-    sent_text = AnalyseLogs().start_analyse(datetime_range=end_datetime-beg_datetime)
+    (domain, is_exists) = check_domain(context)
+    if is_exists:
+        end_datetime = datetime.now()
+        this_year = end_datetime.year
+        this_month = end_datetime.month
+        this_day = end_datetime.day
+        beg_datetime = datetime(year=this_year, month=this_month, day=this_day, hour=0, minute=0, second=0).timestamp()
+        end_datetime = end_datetime.timestamp()
+        sent_text = AnalyseLogs().start_analyse(domain=domain, datetime_range=end_datetime - beg_datetime)
+    else:
+        sent_text = "There is no domain to be analysed."
     context.bot.send_message(chat_id=update.effective_chat.id, text=sent_text)

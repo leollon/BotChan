@@ -1,4 +1,3 @@
-import json
 import os
 from collections import defaultdict
 from typing import Counter
@@ -6,14 +5,14 @@ from typing import Counter
 from ..conf import settings
 from .models import NginxLogEntry
 
-datetime = getattr(settings, 'datetime')
+json = getattr(settings, "json")
+datetime = getattr(settings, "datetime")
 dt_strptime = datetime.strptime
-log_files_list = getattr(settings, "LOG_FILES_LIST")
+log_files_dict = getattr(settings, "LOG_FILES_DICT")
 request_search = getattr(settings, "REQUEST_SEARCH")
 status_code_search = getattr(settings, "STATUS_CODE_SERACH")
 datetime_search = getattr(settings, "DATETIME_SEARCH")
 request_time_search = getattr(settings, "REQUEST_TIME_SEARCH")
-log_files_list = getattr(settings, "LOG_FILES_LIST")
 
 ten_mins = getattr(settings, "TEN_MINUTES")
 one_day = getattr(settings, "ONE_DAY")
@@ -127,9 +126,9 @@ class LogEntry(object):
 
 class AnalyseLogs(LogEntry):
 
-    def start_analyse(self, datetime_range=ten_mins):
+    def start_analyse(self, domain, datetime_range=ten_mins):
         self.get_data_from_logs(
-            filename="/home/monkey/Desktop/Projects/tools/BotChan/blog.access.log",
+            filename=log_files_dict[domain],
             datetime_range=datetime_range
         )
         twoxx = len(self.data.pop('2xx', []))

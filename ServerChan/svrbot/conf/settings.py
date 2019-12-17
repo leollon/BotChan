@@ -5,7 +5,13 @@ from math import floor  # noqa: F401
 from os import environ
 from pathlib import Path  # noqa: F401
 
+import redis
 from peewee import PostgresqlDatabase
+
+try:
+    import ujson as json
+except ImportError:
+    import json
 
 PROC_DIR = "/proc"
 REQUEST_KWARGS = {
@@ -20,7 +26,8 @@ psql_db = PostgresqlDatabase(
     port=int(environ.get("POSTGRES_PORT"))
 )
 
-LOG_FILES_LIST = set("/home/monkey/Desktop/Projects/tools/BotChan/blog.access.log")
+cache_db = redis.Redis(host=environ.get("REDIS_HOST"), port=environ.get("REDIS_PORT"), db=1)
+LOG_FILES_DICT = json.loads(cache_db.get("log_files") or "{}")
 TEN_MINUTES = 10 * 60 * 1.0
 ONE_DAY = 24 * 3600 * 1.0
 SEVEN_DAYS = 7 * ONE_DAY
