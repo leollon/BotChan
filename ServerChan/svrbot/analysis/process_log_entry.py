@@ -44,7 +44,7 @@ class LogEntry(object):
         request_time = request_time_search(line).group(0).replace('"', '')
         return (cdn_ip, real_ip, request, status_code, request_datetime, request_time)
 
-    def get_data_from_logs(self, filename, datetime_range=ten_mins):
+    def get_data_from_logs(self, filename, start_datetime='', datetime_range=ten_mins):
         last_access_datetime_timestamp = None
         for line in self.reverse_open_file(filename):
             method, uri = "Unknown", "Unknown"
@@ -64,6 +64,8 @@ class LogEntry(object):
                 #     status_code=status_code, request_time=request_time,
                 #     uri=uri, request_datetime=request_datetime
                 # )
+                if start_datetime and dt_strptime(request_datetime, "%d/%m/%Y:%H:%M:%S").date() < start_datetime.date():
+                    break
                 if (last_access_datetime_timestamp - current_request_datetime_timestamp) > datetime_range:
                     break
                 uri = self.data.setdefault(uri, {})
@@ -126,8 +128,9 @@ class LogEntry(object):
 
 class AnalyseLogs(LogEntry):
 
-    def start_analyse(self, domain, datetime_range=ten_mins):
+    def start_analyse(self, domain, start_datetime='', datetime_range=ten_mins):
         self.get_data_from_logs(
+            start_datetime=start_datetime,
             filename=log_files_dict[domain],
             datetime_range=datetime_range
         )

@@ -104,13 +104,17 @@ def today(update, context):
     (domain, is_exists) = check_domain(context)
     sent_text = "There is no domain to be analysed."
     if is_exists:
-        end_datetime = datetime.now()
+        start_datetime = end_datetime = datetime.now()
         this_year = end_datetime.year
         this_month = end_datetime.month
         this_day = end_datetime.day
         beg_datetime = datetime(year=this_year, month=this_month, day=this_day, hour=0, minute=0, second=0).timestamp()
         end_datetime = end_datetime.timestamp()
-        sent_text = AnalyseLogs().start_analyse(domain=domain, datetime_range=end_datetime - beg_datetime)
+        sent_text = AnalyseLogs().start_analyse(
+            domain=domain,
+            start_datetime=start_datetime,
+            datetime_range=end_datetime - beg_datetime
+        )
     context.bot.send_message(chat_id=update.effective_chat.id, text=sent_text)
 
 
