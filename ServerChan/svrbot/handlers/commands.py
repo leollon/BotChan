@@ -79,24 +79,22 @@ def start(update, context):
 
 
 @dispatcher.add_handler
-@make_handler(CommandHandler, "last24hours")
-def last_24_hours(update, context):
+@make_handler(CommandHandler, "last10mins")
+def last_10_mins(update, context):
     (domain, is_exists) = check_domain(context)
+    sent_text = "There is no the domain's log to be analysed."
     if is_exists:
-        sent_text = AnalyseLogs().start_analyse(domain=domain, datetime_range=one_day)
-    else:
-        sent_text = "There is no the domain's log to be analysed."
+        sent_text = AnalyseLogs().start_analyse(domain=domain, datetime_range=ten_mins)
     context.bot.send_message(chat_id=update.effective_chat.id, text=sent_text)
 
 
 @dispatcher.add_handler
-@make_handler(CommandHandler, "last10mins")
-def last_10_mins(update, context):
+@make_handler(CommandHandler, "last24hours")
+def last_24_hours(update, context):
     (domain, is_exists) = check_domain(context)
+    sent_text = "There is no the domain's log to be analysed."
     if is_exists:
-        sent_text = AnalyseLogs().start_analyse(domain=domain, datetime_range=ten_mins)
-    else:
-        sent_text = "There is no the domain's log to be analysed."
+        sent_text = AnalyseLogs().start_analyse(domain=domain, datetime_range=one_day)
     context.bot.send_message(chat_id=update.effective_chat.id, text=sent_text)
 
 
@@ -104,6 +102,7 @@ def last_10_mins(update, context):
 @make_handler(CommandHandler, "today")
 def today(update, context):
     (domain, is_exists) = check_domain(context)
+    sent_text = "There is no domain to be analysed."
     if is_exists:
         end_datetime = datetime.now()
         this_year = end_datetime.year
@@ -112,6 +111,34 @@ def today(update, context):
         beg_datetime = datetime(year=this_year, month=this_month, day=this_day, hour=0, minute=0, second=0).timestamp()
         end_datetime = end_datetime.timestamp()
         sent_text = AnalyseLogs().start_analyse(domain=domain, datetime_range=end_datetime - beg_datetime)
-    else:
-        sent_text = "There is no domain to be analysed."
+    context.bot.send_message(chat_id=update.effective_chat.id, text=sent_text)
+
+
+@dispatcher.add_handler
+@make_handler(CommandHandler, "last7days")
+def last_7_days(update, context):
+    (domain, is_exists) = check_domain(context)
+    sent_text = "There is no domain to be analysed."
+    if is_exists:
+        sent_text = AnalyseLogs().start_analyse(domain=domain, datetime_range=seven_days)
+    context.bot.send_message(chat_id=update.effective_chat.id, text=sent_text)
+
+
+@dispatcher.add_handler
+@make_handler(CommandHandler, "last14days")
+def last_14_days(update, context):
+    (domain, is_exists) = check_domain(context)
+    sent_text = "There is no the domain's log to be analysed."
+    if is_exists:
+        sent_text = AnalyseLogs().start_analyse(domain=domain, datetime_range=half_month)
+    context.bot.send_message(chat_id=update.effective_chat.id, text=sent_text)
+
+
+@dispatcher.add_handler
+@make_handler(CommandHandler, "last30days")
+def last_30_days(update, context):
+    (domain, is_exists) = check_domain(context)
+    sent_text = "There is no the domain's log to be analysed."
+    if is_exists:
+        sent_text = AnalyseLogs().start_analyse(domain=domain, datetime_range=thirty_days)
     context.bot.send_message(chat_id=update.effective_chat.id, text=sent_text)

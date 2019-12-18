@@ -1,6 +1,7 @@
 
 from ..conf import settings
 
+Path = getattr(settings, "Path")
 domain_list = getattr(settings, "LOG_FILES_DICT").keys()
 
 
@@ -10,3 +11,7 @@ def check_domain(context):
         if val in domain_list:
             return (val, True)
     return (None, False)
+
+
+def file_exists(file_path):
+    return Path(file_path).is_file()

@@ -15,7 +15,10 @@ except ImportError:
 
 PROC_DIR = "/proc"
 REQUEST_KWARGS = {
-    'proxy_url': 'socks5://127.0.0.1:1080'
+    'proxy_url': 'socks5://127.0.0.1:1080',
+    'urllib3_proxy_kwargs': {
+        'timeout': 5.0
+    }
 }
 
 psql_db = PostgresqlDatabase(

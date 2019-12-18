@@ -5,7 +5,9 @@ from telegram.ext import Updater
 from .conf import settings
 
 updater = Updater(
-    token=environ.get("tg_bot_token"), use_context=True, request_kwargs=getattr(settings, "REQUEST_KWARGS", {})
+    token=environ.get("tg_bot_token"),
+    use_context=True,
+    request_kwargs=getattr(settings, "REQUEST_KWARGS", {})
 )
 dispatcher = updater.dispatcher
 
