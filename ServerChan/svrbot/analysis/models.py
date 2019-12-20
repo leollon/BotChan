@@ -13,9 +13,12 @@ class NginxLogEntry(Model):
     status_code = FixedCharField(max_length=6)
     request_time = FloatField()
     uri = TextField()
-    request_datetime = DateTimeField(formats="%d/%m/%Y:%H:%M:%S")
+    request_datetime = DateTimeField(formats=["%d/%m/%Y:%H:%M:%S", ])
 
     class Meta:
+        indexes = (
+            (('real_ip', 'uri', 'request_datetime'), True),
+        )
         database = psql_db
         table_name = 'nginx_log_entry'
 

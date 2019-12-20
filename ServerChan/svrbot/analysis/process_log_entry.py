@@ -1,6 +1,5 @@
 import os
-from collections import defaultdict
-from typing import Counter
+from collections import Counter, defaultdict
 
 from ..conf import settings
 from .models import NginxLogEntry
@@ -31,12 +30,12 @@ class LogEntry(object):
     data = defaultdict(dict)
 
     def evaluate_line(self, line):
-        cdn_ip, real_ip = line.split(' ')[0].replace('"', ''), line.split(' ')[1].replace('"', '')
+        cdn_ip, real_ip = line.split()[0].replace('"', ''), line.split()[1].replace('"', '')
         if real_ip == '-':
             cdn_ip, real_ip = real_ip, cdn_ip
         req = request_search(line)
         if req is None:
-            request = 'Unknown'
+            request = 'Unknown ' + line.split()[3].replace('"', '')
         else:
             request = req.group(0)
         status_code = status_code_search(line).group(0).replace('"', '')
@@ -47,7 +46,6 @@ class LogEntry(object):
     def get_data_from_logs(self, filename, start_datetime='', datetime_range=ten_mins):
         last_access_datetime_timestamp = None
         for line in self.reverse_open_file(filename):
-            method, uri = "Unknown", "Unknown"
             if "HEAD" not in line and "assets/" not in line:
                 cdn_ip, real_ip, request, status_code, request_datetime, request_time = self.evaluate_line(line)
                 request_datetime = request_datetime.replace(
@@ -57,13 +55,12 @@ class LogEntry(object):
                 current_request_datetime_timestamp = dt_strptime(request_datetime, "%d/%m/%Y:%H:%M:%S").timestamp()
                 if last_access_datetime_timestamp is None:
                     last_access_datetime_timestamp = dt_strptime(request_datetime, "%d/%m/%Y:%H:%M:%S").timestamp()
-                if request != "Unknown":
-                    method, uri = request.split(' ')[0], request.split(' ')[1]
-                # self.save_log_entry_to_db(
-                #     cdn_ip=cdn_ip, real_ip=real_ip, http_method=method,
-                #     status_code=status_code, request_time=request_time,
-                #     uri=uri, request_datetime=request_datetime
-                # )
+                method, uri = request.split(' ')[0], request.split(' ')[1]
+                self.save_log_entry_to_db(
+                    cdn_ip=cdn_ip, real_ip=real_ip, http_method=method,
+                    status_code=status_code, request_time=request_time,
+                    uri=uri, request_datetime=request_datetime
+                )
                 if start_datetime and dt_strptime(request_datetime, "%d/%m/%Y:%H:%M:%S").date() < start_datetime.date():
                     break
                 if (last_access_datetime_timestamp - current_request_datetime_timestamp) > datetime_range:
@@ -119,11 +116,11 @@ class LogEntry(object):
                 yield segment
 
     def save_log_entry_to_db(self, cdn_ip, real_ip, http_method, status_code, request_time, uri, request_datetime):
-        NginxLogEntry(
+        NginxLogEntry.get_or_create(
             cdn_ip=cdn_ip, real_ip=real_ip, http_method=http_method,
             status_code=status_code, request_time=request_time,
             uri=uri, request_datetime=request_datetime
-        ).save()
+        )
 
 
 class AnalyseLogs(LogEntry):
