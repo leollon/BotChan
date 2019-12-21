@@ -1,6 +1,8 @@
 import os
 from collections import Counter, defaultdict
 
+from peewee import IntegrityError
+
 from ..conf import settings
 from .models import NginxLogEntry
 
@@ -116,11 +118,14 @@ class LogEntry(object):
                 yield segment
 
     def save_log_entry_to_db(self, cdn_ip, real_ip, http_method, status_code, request_time, uri, request_datetime):
-        NginxLogEntry.get_or_create(
-            cdn_ip=cdn_ip, real_ip=real_ip, http_method=http_method,
-            status_code=status_code, request_time=request_time,
-            uri=uri, request_datetime=request_datetime
-        )
+        try:
+            NginxLogEntry.get_or_create(
+                cdn_ip=cdn_ip, real_ip=real_ip, http_method=http_method,
+                status_code=status_code, request_time=request_time,
+                uri=uri, request_datetime=request_datetime
+            )
+        except IntegrityError:
+            pass
 
 
 class AnalyseLogs(LogEntry):
@@ -138,7 +143,7 @@ class AnalyseLogs(LogEntry):
         not_through_cdn = Counter()
         for key in self.data.keys():
             visited_ips.update(Counter(self.data.get(key).get("real_ips")))
-            not_through_cdn.update(Counter(self.data.get(key, '').get("not_cdn", {}).get("real_ips", [])))
+            not_through_cdn.update(Counter(self.data.get(key, {}).get("not_cdn", {}).get("real_ips", [])))
         visited_ips = json.dumps(dict(visited_ips.most_common(10)), indent=4)
         not_through_cdn = json.dumps(dict(not_through_cdn.most_common(1)), indent=4)
         result = "2xx: {0}\n\n3xx: {1}\n\n4xx: {2}\n\nvisited_ips: {3}\n\nnot_through_cdn: {4}\n\n".format(
