@@ -102,7 +102,7 @@ def last_24_hours(update, context):
 @make_handler(CommandHandler, "today")
 def today(update, context):
     (domain, is_exists) = check_domain(context)
-    sent_text = "There is no domain to be analysed."
+    sent_text = "There is no the domain's log to be analysed."
     if is_exists:
         start_datetime = end_datetime = datetime.now()
         this_year = end_datetime.year

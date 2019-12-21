@@ -13,5 +13,5 @@ def check_domain(context):
     return (None, False)
 
 
-def file_exists(file_path):
+def is_file(file_path):
     return Path(file_path).is_file()

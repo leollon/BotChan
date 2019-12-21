@@ -3,15 +3,16 @@ from functools import wraps
 import click
 
 from svrbot.conf import settings
+from svrbot.handlers.utils import is_file
 
 json = getattr(settings, "json")
 cache_db = getattr(settings, "cache_db")
 
 
 def check_aguments(domain, log_file):
-    if len(domain.strip('.').split('.')) <= 1:
+    if not domain or (len(domain.strip('.').split('.')) <= 1):
         raise click.BadParameter("Not specify domain!", param_hint=['--domain'])
-    if not log_file:
+    if not log_file or not is_file(log_file):
         raise click.BadParameter("Not specify log file.", param_hint=['--log_file'])
 
     def decorator(func):

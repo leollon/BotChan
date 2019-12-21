@@ -45,9 +45,9 @@ class LogEntry(object):
         request_time = request_time_search(line).group(0).replace('"', '')
         return (cdn_ip, real_ip, request, status_code, request_datetime, request_time)
 
-    def get_data_from_logs(self, filename, start_datetime='', datetime_range=ten_mins):
+    def get_data_from_logs(self, file_path, start_datetime='', datetime_range=ten_mins):
         last_access_datetime_timestamp = None
-        for line in self.reverse_open_file(filename):
+        for line in self.reverse_open_file(file_path):
             if "HEAD" not in line and "assets/" not in line:
                 cdn_ip, real_ip, request, status_code, request_datetime, request_time = self.evaluate_line(line)
                 request_datetime = request_datetime.replace(
@@ -83,11 +83,8 @@ class LogEntry(object):
                     self.data.setdefault("2xx", []).append(status_code)
         return self.data
 
-    def open_file(self, filename, mode='r'):
-        return open(filename, mode=mode)
-
-    def reverse_open_file(self, filename, buff_size=8192):
-        with open(filename, 'r') as fp:
+    def reverse_open_file(self, file_path, buff_size=8192):
+        with open(file_path, 'r') as fp:
             segment = None
             offset = 0
             fp.seek(0, os.SEEK_END)
@@ -133,7 +130,7 @@ class AnalyseLogs(LogEntry):
     def start_analyse(self, domain, start_datetime='', datetime_range=ten_mins):
         self.get_data_from_logs(
             start_datetime=start_datetime,
-            filename=log_files_dict[domain],
+            file_path=log_files_dict[domain],
             datetime_range=datetime_range
         )
         twoxx = len(self.data.pop('2xx', []))
