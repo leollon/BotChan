@@ -4,7 +4,7 @@ from telegram.ext import CommandHandler
 from .. import dispatcher
 from ..analysis.process_log_entry import AnalyseLogs
 from ..conf import settings
-from .decorators import make_handler
+from .decorators import auth, make_handler
 from .utils import check_domain
 
 Path = getattr(settings, "Path")
@@ -21,6 +21,7 @@ thirty_days = getattr(settings, "THIRTY_DAYS")
 
 @dispatcher.add_handler
 @make_handler(CommandHandler, "resource")
+@auth
 def resource(update, context):
     cpu_percent = psutil.cpu_percent()
     swap_memory = psutil.swap_memory()
@@ -41,6 +42,7 @@ def resource(update, context):
 
 @dispatcher.add_handler
 @make_handler(CommandHandler, "uptime")
+@auth
 def uptime(update, context):
     try:
         with open((proc_base / 'uptime').as_posix(), 'r') as fp:
@@ -59,6 +61,7 @@ def uptime(update, context):
 
 @dispatcher.add_handler
 @make_handler(CommandHandler, "load")
+@auth
 def load(update, context):
     loadavg = 'None'
     with open((proc_base / "loadavg").as_posix(), 'r') as fp:
@@ -68,6 +71,7 @@ def load(update, context):
 
 @dispatcher.add_handler
 @make_handler(CommandHandler, ["ping", "PING"])
+@auth
 def ping(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, text="PONG")
 
@@ -80,6 +84,7 @@ def start(update, context):
 
 @dispatcher.add_handler
 @make_handler(CommandHandler, "last10mins")
+@auth
 def last_10_mins(update, context):
     (domain, is_exists) = check_domain(context)
     sent_text = "There is no the domain's log to be analysed."
@@ -90,6 +95,7 @@ def last_10_mins(update, context):
 
 @dispatcher.add_handler
 @make_handler(CommandHandler, "last24hours")
+@auth
 def last_24_hours(update, context):
     (domain, is_exists) = check_domain(context)
     sent_text = "There is no the domain's log to be analysed."
@@ -100,6 +106,7 @@ def last_24_hours(update, context):
 
 @dispatcher.add_handler
 @make_handler(CommandHandler, "today")
+@auth
 def today(update, context):
     (domain, is_exists) = check_domain(context)
     sent_text = "There is no the domain's log to be analysed."
@@ -120,6 +127,7 @@ def today(update, context):
 
 @dispatcher.add_handler
 @make_handler(CommandHandler, "last7days")
+@auth
 def last_7_days(update, context):
     (domain, is_exists) = check_domain(context)
     sent_text = "There is no domain to be analysed."
@@ -130,6 +138,7 @@ def last_7_days(update, context):
 
 @dispatcher.add_handler
 @make_handler(CommandHandler, "last14days")
+@auth
 def last_14_days(update, context):
     (domain, is_exists) = check_domain(context)
     sent_text = "There is no the domain's log to be analysed."
@@ -140,6 +149,7 @@ def last_14_days(update, context):
 
 @dispatcher.add_handler
 @make_handler(CommandHandler, "last30days")
+@auth
 def last_30_days(update, context):
     (domain, is_exists) = check_domain(context)
     sent_text = "There is no the domain's log to be analysed."

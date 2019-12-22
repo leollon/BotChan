@@ -29,8 +29,8 @@ access_log /path/to/access.log cust_format;
 [Create a bot and get a bot token](https://core.telegram.org/bots#3-how-do-i-create-a-bot)
 
 ```bash
-
 export tg_bot_token=110201543:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw # invalid token
+export CHAT_ID=12346783  # invalid chat id
 export POSTGRES_DB=set_postgres_db_used
 export POSTGRES_USER=set_postgres_user
 export POSTGRES_PASSWORD=set_postgres_password
