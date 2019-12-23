@@ -40,5 +40,6 @@ STATUS_CODE_SERACH = re.compile(r"\"{1}[1-5]{1}[0-9]{2}\"{1}").search
 REQUEST_SEARCH = re.compile(r"(GET|POST|PUT|DELETE|PATCH|OPTIONS|TRACE|CONNECT){1}[\w\d\s/%\-\.]+").search
 DATETIME_SEARCH = re.compile(r"(\d{2}/\w{3}/\d{4}:\d{2}:\d{2}:\d{2})").search  # 09/Dec/2019:11:02:41
 REQUEST_TIME_SEARCH = re.compile(r"\"(\d+\.\d{3}\")").search
+HTTP_REFERER_SEARCH = re.compile(r"(\-|https|http\:\/\/[\w\d\%\.\-\/]+)").search
 
 chat_id = environ.get("CHAT_ID")

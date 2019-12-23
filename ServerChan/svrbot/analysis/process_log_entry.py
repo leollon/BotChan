@@ -14,6 +14,7 @@ request_search = getattr(settings, "REQUEST_SEARCH")
 status_code_search = getattr(settings, "STATUS_CODE_SERACH")
 datetime_search = getattr(settings, "DATETIME_SEARCH")
 request_time_search = getattr(settings, "REQUEST_TIME_SEARCH")
+http_referer_search = getattr(settings, "HTTP_REFERER_SEARCH")
 
 ten_mins = getattr(settings, "TEN_MINUTES")
 one_day = getattr(settings, "ONE_DAY")
@@ -43,13 +44,16 @@ class LogEntry(object):
         status_code = status_code_search(line).group(0).replace('"', '')
         request_datetime = datetime_search(line).group(0)
         request_time = request_time_search(line).group(0).replace('"', '')
-        return (cdn_ip, real_ip, request, status_code, request_datetime, request_time)
+        referer = http_referer_search(line).group(0)
+
+        return (cdn_ip, real_ip, request, status_code, request_datetime, request_time, referer)
 
     def get_data_from_logs(self, file_path, start_datetime='', datetime_range=ten_mins):
         last_access_datetime_timestamp = None
         for line in self.reverse_open_file(file_path):
             if "HEAD" not in line and "assets/" not in line:
-                cdn_ip, real_ip, request, status_code, request_datetime, request_time = self.evaluate_line(line)
+                ret_val = self.evaluate_line(line)
+                cdn_ip, real_ip, request, status_code, request_datetime, request_time, referer = ret_val
                 request_datetime = request_datetime.replace(
                     request_datetime[3:6],
                     str(self.month_map[request_datetime[3:6]])
@@ -61,7 +65,7 @@ class LogEntry(object):
                 self.save_log_entry_to_db(
                     cdn_ip=cdn_ip, real_ip=real_ip, http_method=method,
                     status_code=status_code, request_time=request_time,
-                    uri=uri, request_datetime=request_datetime
+                    uri=uri, request_datetime=request_datetime, http_referer=referer
                 )
                 if start_datetime and dt_strptime(request_datetime, "%d/%m/%Y:%H:%M:%S").date() < start_datetime.date():
                     break
@@ -114,12 +118,15 @@ class LogEntry(object):
             if segment is not None:
                 yield segment
 
-    def save_log_entry_to_db(self, cdn_ip, real_ip, http_method, status_code, request_time, uri, request_datetime):
+    def save_log_entry_to_db(
+        self, cdn_ip, real_ip, http_method, status_code,
+        request_time, uri, request_datetime, http_referer
+    ):
         try:
             NginxLogEntry.get_or_create(
                 cdn_ip=cdn_ip, real_ip=real_ip, http_method=http_method,
                 status_code=status_code, request_time=request_time,
-                uri=uri, request_datetime=request_datetime
+                uri=uri, request_datetime=request_datetime, http_referer=http_referer
             )
         except IntegrityError:
             pass
