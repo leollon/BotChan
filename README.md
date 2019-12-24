@@ -13,9 +13,9 @@ pip install -r requirements.txt
 ### Nginx log format
 
 ```text
-log_format cust_format '"$remote_addr" "$http_x_forwarded_for" "$remote_user" "$request"'
-                        ' "$status" "$connection" "$http_referer" "$http_user_agent" "$time_local" "$request_time"';
-
+log_format cust_format '$remote_addr $http_x_forwarded_for $remote_user "$request"'
+                        ' $status $connection "$http_referer" "$http_user_agent"'
+                        ' "$time_local" $request_time';
 ```
 
 Add above log format to the http block in `nginx.conf`, and then set the access_log like this:

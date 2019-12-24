@@ -8,9 +8,9 @@ from .models import NginxLogEntry
 
 json = getattr(settings, "json")
 datetime = getattr(settings, "datetime")
-dt_strptime = datetime.strptime
 log_files_dict = getattr(settings, "LOG_FILES_DICT")
 request_search = getattr(settings, "REQUEST_SEARCH")
+http_method_search = getattr(settings, "HTTP_METHOD_SEARCH")
 status_code_search = getattr(settings, "STATUS_CODE_SERACH")
 datetime_search = getattr(settings, "DATETIME_SEARCH")
 request_time_search = getattr(settings, "REQUEST_TIME_SEARCH")
@@ -21,6 +21,8 @@ one_day = getattr(settings, "ONE_DAY")
 seven_days = getattr(settings, "SEVEN_DAYS")
 HALF_MONTH = getattr(settings, "HALF_MONTH")
 thirty_days = getattr(settings, "THIRTY_DAYS")
+
+dt_strptime = datetime.strptime
 
 
 class LogEntry(object):
@@ -33,19 +35,14 @@ class LogEntry(object):
     data = defaultdict(dict)
 
     def evaluate_line(self, line):
-        cdn_ip, real_ip = line.split()[0].replace('"', ''), line.split()[1].replace('"', '')
+        cdn_ip, real_ip = line.split()[0:2]
         if real_ip == '-':
             cdn_ip, real_ip = real_ip, cdn_ip
-        req = request_search(line)
-        if req is None:
-            request = 'Unknown ' + line.split()[3].replace('"', '')
-        else:
-            request = req.group(0)
-        status_code = status_code_search(line).group(0).replace('"', '')
-        request_datetime = datetime_search(line).group(0)
-        request_time = request_time_search(line).group(0).replace('"', '')
-        referer = http_referer_search(line).group(0)
-
+        request = request_search(line).group(1)
+        status_code = status_code_search(line).group(1)
+        request_datetime = datetime_search(line).group(1)
+        request_time = request_time_search(line).group(1)
+        referer = http_referer_search(line).group(1)
         return (cdn_ip, real_ip, request, status_code, request_datetime, request_time, referer)
 
     def get_data_from_logs(self, file_path, start_datetime='', datetime_range=ten_mins):
@@ -61,7 +58,10 @@ class LogEntry(object):
                 current_request_datetime_timestamp = dt_strptime(request_datetime, "%d/%m/%Y:%H:%M:%S").timestamp()
                 if last_access_datetime_timestamp is None:
                     last_access_datetime_timestamp = dt_strptime(request_datetime, "%d/%m/%Y:%H:%M:%S").timestamp()
-                method, uri = request.split(' ')[0], request.split(' ')[1]
+                if http_method_search(request):
+                    method, uri = request.split()[0], request.split()[1]
+                else:
+                    method, uri = 'Unknown', request
                 self.save_log_entry_to_db(
                     cdn_ip=cdn_ip, real_ip=real_ip, http_method=method,
                     status_code=status_code, request_time=request_time,
@@ -76,16 +76,15 @@ class LogEntry(object):
                 if cdn_ip != "-":
                     uri.setdefault("cdn_ips", []).append(cdn_ip)
                 if cdn_ip == "-":
-                    not_cdn = uri.setdefault("not_cdn", {})
-                    not_cdn.setdefault("methods", []).append(method)
-                    not_cdn.setdefault("real_ips", []).append(real_ip)
+                    not_through_cdn = uri.setdefault("not_through_cdn", {})
+                    not_through_cdn.setdefault("methods", []).append(method)
+                    not_through_cdn.setdefault("real_ips", []).append(real_ip)
                 if status_code.startswith('4'):
                     self.data.setdefault("4xx", []).append(status_code)
                 if status_code.startswith('3'):
                     self.data.setdefault("3xx", []).append(status_code)
                 if status_code.startswith('2'):
                     self.data.setdefault("2xx", []).append(status_code)
-        return self.data
 
     def reverse_open_file(self, file_path, buff_size=8192):
         with open(file_path, 'r') as fp:
@@ -147,9 +146,9 @@ class AnalyseLogs(LogEntry):
         not_through_cdn = Counter()
         for key in self.data.keys():
             visited_ips.update(Counter(self.data.get(key).get("real_ips")))
-            not_through_cdn.update(Counter(self.data.get(key, {}).get("not_cdn", {}).get("real_ips", [])))
+            not_through_cdn.update(Counter(self.data.get(key, {}).get("not_through_cdn", {}).get("real_ips", [])))
         visited_ips = json.dumps(dict(visited_ips.most_common(10)), indent=4)
-        not_through_cdn = json.dumps(dict(not_through_cdn.most_common(1)), indent=4)
+        not_through_cdn = json.dumps(dict(not_through_cdn.most_common(10)), indent=4)
         result = "2xx: {0}\n\n3xx: {1}\n\n4xx: {2}\n\nvisited_ips: {3}\n\nnot_through_cdn: {4}\n\n".format(
             twoxx, threexx, fourxx, visited_ips, not_through_cdn
         )
