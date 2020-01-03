@@ -2,7 +2,7 @@ from functools import wraps
 
 from ..conf import settings
 
-allowed_id = int(getattr(settings, "chat_id", 0))
+allowed_id = int(getattr(settings, "CHAT_ID", 0))
 
 
 class make_handler:

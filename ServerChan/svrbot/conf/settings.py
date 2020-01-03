@@ -37,10 +37,9 @@ SEVEN_DAYS = 7 * ONE_DAY
 HALF_MONTH = 2 * SEVEN_DAYS
 THIRTY_DAYS = 30 * ONE_DAY
 STATUS_CODE_SERACH = re.compile(r"\s([1-5]{1}[0-9]{2})\s").search
-REQUEST_SEARCH = re.compile(r"([GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS|CONNECT]{1}[^\"]+)").search
-HTTP_METHOD_SEARCH = re.compile(r"(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS|CONNECT{1})").search
+REQUEST_SEARCH = re.compile(r'(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS|CONNECT{1})\s([^"]+)\s').search
 DATETIME_SEARCH = re.compile(r"(\d{2}/\w{3}/\d{4}:\d{2}:\d{2}:\d{2})").search  # 09/Dec/2019:11:02:41
 REQUEST_TIME_SEARCH = re.compile(r"\s(\d+\.\d{3})$").search
-HTTP_REFERER_SEARCH = re.compile(r"\"(\-|https?:\/{2}[\w\d\%\.\-\/_]+)").search
+HTTP_REFERER_SEARCH = re.compile(r'"(https?:\/{2}[\w\d\%\.\-\/_]+|\-)').search
 
-chat_id = environ.get("CHAT_ID")
+CHAT_ID = environ.get("CHAT_ID")

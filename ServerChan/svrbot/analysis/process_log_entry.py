@@ -10,7 +10,6 @@ json = getattr(settings, "json")
 datetime = getattr(settings, "datetime")
 log_files_dict = getattr(settings, "LOG_FILES_DICT")
 request_search = getattr(settings, "REQUEST_SEARCH")
-http_method_search = getattr(settings, "HTTP_METHOD_SEARCH")
 status_code_search = getattr(settings, "STATUS_CODE_SERACH")
 datetime_search = getattr(settings, "DATETIME_SEARCH")
 request_time_search = getattr(settings, "REQUEST_TIME_SEARCH")
@@ -38,7 +37,11 @@ class LogEntry(object):
         cdn_ip, real_ip = line.split()[0:2]
         if real_ip == '-':
             cdn_ip, real_ip = real_ip, cdn_ip
-        request = request_search(line).group(1)
+        request = request_search(line)
+        if request:
+            request = request.group(1) + " " + request.group(2)
+        else:
+            request = "Unknown " + line.split()[3]
         status_code = status_code_search(line).group(1)
         request_datetime = datetime_search(line).group(1)
         request_time = request_time_search(line).group(1)
@@ -58,10 +61,7 @@ class LogEntry(object):
                 current_request_datetime_timestamp = dt_strptime(request_datetime, "%d/%m/%Y:%H:%M:%S").timestamp()
                 if last_access_datetime_timestamp is None:
                     last_access_datetime_timestamp = dt_strptime(request_datetime, "%d/%m/%Y:%H:%M:%S").timestamp()
-                if http_method_search(request):
-                    method, uri = request.split()[0], request.split()[1]
-                else:
-                    method, uri = 'Unknown', request
+                method, uri = request.split()[0], request.split()[1]
                 self.save_log_entry_to_db(
                     cdn_ip=cdn_ip, real_ip=real_ip, http_method=method,
                     status_code=status_code, request_time=request_time,
@@ -76,9 +76,9 @@ class LogEntry(object):
                 if cdn_ip != "-":
                     uri.setdefault("cdn_ips", []).append(cdn_ip)
                 if cdn_ip == "-":
-                    not_through_cdn = uri.setdefault("not_through_cdn", {})
-                    not_through_cdn.setdefault("methods", []).append(method)
-                    not_through_cdn.setdefault("real_ips", []).append(real_ip)
+                    ip_not_through_cdn = uri.setdefault("ip_not_through_cdn", {})
+                    ip_not_through_cdn.setdefault("methods", []).append(method)
+                    ip_not_through_cdn.setdefault("real_ips", []).append(real_ip)
                 if status_code.startswith('4'):
                     self.data.setdefault("4xx", []).append(status_code)
                 if status_code.startswith('3'):
@@ -133,6 +133,12 @@ class LogEntry(object):
 
 class AnalyseLogs(LogEntry):
 
+    @staticmethod
+    def serialize(data, indent=4):
+        if isinstance(data, dict):
+            return json.dumps(data, indent=indent)
+        return data
+
     def start_analyse(self, domain, start_datetime='', datetime_range=ten_mins):
         self.get_data_from_logs(
             start_datetime=start_datetime,
@@ -142,15 +148,18 @@ class AnalyseLogs(LogEntry):
         twoxx = len(self.data.pop('2xx', []))
         threexx = len(self.data.pop('3xx', []))
         fourxx = len(self.data.pop('4xx', []))
-        visited_ips = Counter()
-        not_through_cdn = Counter()
-        for key in self.data.keys():
-            visited_ips.update(Counter(self.data.get(key).get("real_ips")))
-            not_through_cdn.update(Counter(self.data.get(key, {}).get("not_through_cdn", {}).get("real_ips", [])))
-        visited_ips = json.dumps(dict(visited_ips.most_common(10)), indent=4)
-        not_through_cdn = json.dumps(dict(not_through_cdn.most_common(10)), indent=4)
-        result = "2xx: {0}\n\n3xx: {1}\n\n4xx: {2}\n\nvisited_ips: {3}\n\nnot_through_cdn: {4}\n\n".format(
-            twoxx, threexx, fourxx, visited_ips, not_through_cdn
+        real_ips = Counter()
+        ip_not_through_cdn = Counter()
+        uri_clicks = dict()
+        for uri in self.data.keys():
+            real_ips.update(Counter(self.data.get(uri).get("real_ips")))
+            ip_not_through_cdn.update(Counter(self.data.get(uri, {}).get("ip_not_through_cdn", {}).get("real_ips", [])))
+            uri_clicks.setdefault(uri, len(self.data.get(uri).get("real_ips")))
+        real_ips = self.serialize(dict(real_ips.most_common(10)))
+        ip_not_through_cdn = self.serialize(dict(ip_not_through_cdn.most_common(10)))
+        uri_clicks = self.serialize(uri_clicks)
+        result = "2xx: {0}\n3xx: {1}\n4xx: {2}\nreal_ips: {3}\nip_not_through_cdn: {4}\nuri_clicks: {5}\n".format(
+            twoxx, threexx, fourxx, real_ips, ip_not_through_cdn, uri_clicks
         )
         self.data.clear()
         return result
