@@ -5,7 +5,7 @@ from .. import dispatcher
 from ..analysis.process_log_entry import AnalyseLogs
 from ..conf import settings
 from .decorators import auth, make_handler
-from .utils import check_domain
+from .utils import check_domain, query_ip
 
 Path = getattr(settings, "Path")
 floor = getattr(settings, "floor")
@@ -74,6 +74,14 @@ def load(update, context):
 @auth
 def ping(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, text="PONG")
+
+
+@dispatcher.add_handler
+@make_handler(CommandHandler, ['ip', 'IP'])
+@auth
+def ip(update, context):
+    ip_data = query_ip(context)
+    context.bot.send_message(chat_id=update.effective_chat.id, text=ip_data)
 
 
 @dispatcher.add_handler
