@@ -46,8 +46,8 @@ def add(domain, log_file):
 
 @cli.add_command
 @click.command()
-@click.option("--domain", default="", help="The domain of a log file.[e.g. example.com]")
-@click.option("--log_file", default="", help="The absolute path of the access log file.[e.g. /var/log/access.log]")
+@click.option("--domain", help="The domain of a log file.[e.g. example.com]")
+@click.option("--log_file", help="The absolute path of the access log file.[e.g. /var/log/access.log]")
 def remove(domain, log_file):
 
     @check_aguments(domain, log_file)

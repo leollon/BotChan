@@ -16,10 +16,6 @@ request_time_search = getattr(settings, "REQUEST_TIME_SEARCH")
 http_referer_search = getattr(settings, "HTTP_REFERER_SEARCH")
 
 ten_mins = getattr(settings, "TEN_MINUTES")
-one_day = getattr(settings, "ONE_DAY")
-seven_days = getattr(settings, "SEVEN_DAYS")
-HALF_MONTH = getattr(settings, "HALF_MONTH")
-thirty_days = getattr(settings, "THIRTY_DAYS")
 
 dt_strptime = datetime.strptime
 
@@ -157,7 +153,7 @@ class AnalyseLogs(LogEntry):
             uri_clicks.setdefault(uri, len(self.data.get(uri).get("real_ips")))
         real_ips = self.serialize(dict(real_ips.most_common(10)))
         ip_not_through_cdn = self.serialize(dict(ip_not_through_cdn.most_common(10)))
-        uri_clicks = self.serialize(uri_clicks)
+        uri_clicks = self.serialize(dict(sorted(uri_clicks.items(), key=lambda t: t[1], reverse=True)[:10]))
         result = "2xx: {0}\n3xx: {1}\n4xx: {2}\nreal_ips: {3}\nip_not_through_cdn: {4}\nuri_clicks: {5}\n".format(
             twoxx, threexx, fourxx, real_ips, ip_not_through_cdn, uri_clicks
         )
