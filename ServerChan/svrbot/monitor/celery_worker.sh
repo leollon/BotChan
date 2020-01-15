@@ -9,6 +9,5 @@ chat_id=your-own-chat-id
 flower_dashboard_url="127.0.0.1:5555/dashboard?json=1"
 http_basic_auth=username:password
 
-message=$(curl -fsL -H WWW-Authentication=${http_basic_auth} "${flower_dashboard_url}" -o - | jq . - | grep -E "status|hostname" | tr -d " ,")
+message=$(curl -fL -u ${http_basic_auth} "${flower_dashboard_url}" -o - | jq . - | grep -E "status|hostname" | tr -d " ,")
 curl -s "https://api.telegram.org/bot${tg_bot_token}/sendMessage?chat_id=${chat_id}" --data-binary "&text=${message}"
-

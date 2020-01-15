@@ -2,7 +2,6 @@ python-telegram-bot[socks]==12.2.0
 pre-commit==1.20.0
 pylint==2.4.4
 flake8==3.7.9
-pylint==2.4.4
 psutil==5.6.7
 ujson==1.35
 click==7.0
