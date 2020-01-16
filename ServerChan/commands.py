@@ -1,3 +1,4 @@
+import pickle
 from functools import wraps
 
 import click
@@ -5,8 +6,14 @@ import click
 from svrbot.conf import settings
 from svrbot.handlers.utils import is_file
 
-json = getattr(settings, "json")
-cache_db = getattr(settings, "cache_db")
+Path = settings.Path
+BASE_DIR = Path(__file__).parent.absolute()
+
+DATA_DIR = BASE_DIR / 'svrbot/data'  # host mapped to log file location configuration
+DATA_DIR.mkdir(mode=0o755, exist_ok=True)  # idempotent operation
+
+log_file_location = (DATA_DIR / 'log_file_location').as_posix()
+Path(log_file_location).touch(mode=0o744)  # idempotent operation
 
 
 def check_aguments(domain, log_file):
@@ -36,10 +43,11 @@ def add(domain, log_file):
 
     @check_aguments(domain, log_file)
     def set_add(domain, log_file):
-        log_files_dict = json.loads(cache_db.get("log_files") or "{}")
-        log_files_dict[domain] = log_file
-        cache_db.set("log_files", json.dumps(log_files_dict))
-        click.echo(cache_db.get("log_files"))
+        log_files_dict = {}
+        with open(log_file_location, 'wb') as fp:
+            log_files_dict[domain] = log_file
+            pickle.dump(log_files_dict, fp)
+        click.echo(log_files_dict)
 
     set_add(domain, log_file)
 
@@ -52,10 +60,12 @@ def remove(domain, log_file):
 
     @check_aguments(domain, log_file)
     def set_remove(domain, log_file):
-        log_files_dict = json.loads(cache_db.get("log_files") or "{}")
-        log_files_dict.pop(domain, '')
-        cache_db.set("log_files", json.dumps(log_files_dict))
-        click.echo(cache_db.get("log_files"))
+        log_files_dict = {}
+        with open(log_file_location, 'rb+') as fp:
+            log_files_dict = pickle.load(fp)
+            log_files_dict.pop(domain, '')
+            pickle.dump(log_files_dict, fp)
+        click.echo(log_files_dict)
 
     set_remove(domain, log_file)
 
@@ -64,7 +74,7 @@ def remove(domain, log_file):
 @click.command()
 def list():
 
-    click.echo(cache_db.get("log_files"))
+    click.echo(pickle.load(open(log_file_location, 'rb')))
 
 
 if __name__ == "__main__":
