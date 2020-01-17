@@ -1,11 +1,11 @@
-import pickle
 import re
 from datetime import datetime  # noqa: F401
 from math import floor  # noqa: F401
 from os import environ
-from pathlib import Path  # noqa: F401
+from pathlib import Path
+from typing import Type  # noqa: F401
 
-from peewee import PostgresqlDatabase
+import redis
 
 try:
     import ujson as json
@@ -21,21 +21,15 @@ REQUEST_KWARGS = {
     }
 }
 
-psql_db = PostgresqlDatabase(
-    database=environ.get("POSTGRES_DB"),
-    user=environ.get("POSTGRES_USER"),
-    password=environ.get("POSTGRES_PASSWORD"),
-    host=environ.get("POSTGRES_HOST"),
-    port=int(environ.get("POSTGRES_PORT"))
-)
+cache = redis.Redis(host=environ.get("REDIS_HOST"), port=int(environ.get("REDIS_PORT")), db=1, encoding='utf-8')
 
+try:
+    json.loads(cache.get('tg_bot_log_files_dict'))
+except TypeError:
+    cache.set('tg_bot_log_files_dict', '{}')
+finally:
+    LOG_FILES_DICT = json.loads(cache.get('tg_bot_log_files_dict'))
 
-DATA_DIR = BASE_DIR / 'data'  # host mapped to log file location configuration
-DATA_DIR.mkdir(mode=0o755, exist_ok=True)  # idempotent operation
-
-LOG_FILE_LOCATION = (DATA_DIR / 'log_file_location').as_posix()
-Path(LOG_FILE_LOCATION).touch(mode=0o744)  # idempotent operation
-LOG_FILES_DICT = pickle.load(open(LOG_FILE_LOCATION, 'rb'))
 
 TEN_MINUTES = 10 * 60 * 1.0
 ONE_DAY = 24 * 3600 * 1.0

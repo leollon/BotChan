@@ -31,14 +31,6 @@ access_log /path/to/access.log cust_format;
 ```bash
 export tg_bot_token=110201543:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw # invalid token
 export CHAT_ID=12346783  # invalid chat id
-export POSTGRES_DB=set_postgres_db_used
-export POSTGRES_USER=set_postgres_user
-export POSTGRES_PASSWORD=set_postgres_password
-export POSTGRES_HOST=localhost
-export POSTGRES_PORT=5432
-
-export REDIS_HOST=localhost
-export REDIS_PORT=6379
 ```
 
 ### Start the bot

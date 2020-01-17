@@ -5,8 +5,9 @@ import click
 from svrbot.conf import settings
 from svrbot.handlers.utils import is_file
 
-pickle = settings.pickle
-log_file_location = settings.LOG_FILE_LOCATION
+cache = settings.cache
+json = settings.json
+log_files_dict = settings.LOG_FILES_DICT
 
 
 def check_aguments(domain, log_file):
@@ -36,10 +37,8 @@ def add(domain, log_file):
 
     @check_aguments(domain, log_file)
     def set_add(domain, log_file):
-        log_files_dict = {}
-        with open(log_file_location, 'wb') as fp:
-            log_files_dict[domain] = log_file
-            pickle.dump(log_files_dict, fp)
+        log_files_dict[domain] = log_file
+        cache.set('tg_bot_log_files_dict', json.dumps(log_files_dict, indent=4))
         click.echo(log_files_dict)
 
     set_add(domain, log_file)
@@ -53,11 +52,8 @@ def remove(domain, log_file):
 
     @check_aguments(domain, log_file)
     def set_remove(domain, log_file):
-        log_files_dict = {}
-        with open(log_file_location, 'rb+') as fp:
-            log_files_dict = pickle.load(fp)
-            log_files_dict.pop(domain, '')
-            pickle.dump(log_files_dict, fp)
+        log_files_dict.pop(domain)
+        cache.set('tg_bot_log_files_dict', json.dumps(log_files_dict, indent=4))
         click.echo(log_files_dict)
 
     set_remove(domain, log_file)
@@ -67,7 +63,7 @@ def remove(domain, log_file):
 @click.command()
 def list():
 
-    click.echo(pickle.load(open(log_file_location, 'rb')))
+    click.echo(json.loads(log_files_dict))
 
 
 if __name__ == "__main__":

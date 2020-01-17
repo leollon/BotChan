@@ -1,10 +1,7 @@
 import os
 from collections import Counter, defaultdict
 
-from peewee import IntegrityError
-
 from ..conf import settings
-from .models import NginxLogEntry
 
 json = settings.json
 datetime = settings.datetime
@@ -56,11 +53,6 @@ class LogEntry(object):
                 if last_access_datetime_timestamp is None:
                     last_access_datetime_timestamp = dt_strptime(request_datetime, "%d/%m/%Y:%H:%M:%S").timestamp()
                 method, uri = request.split()[0], request.split()[1]
-                self.save_log_entry_to_db(
-                    cdn_ip=cdn_ip, real_ip=real_ip, http_method=method,
-                    status_code=status_code, request_time=request_time,
-                    uri=uri, request_datetime=request_datetime, http_referer=referer
-                )
                 if start_datetime and dt_strptime(request_datetime, "%d/%m/%Y:%H:%M:%S").date() < start_datetime.date():
                     break
                 if (last_access_datetime_timestamp - current_request_datetime_timestamp) > datetime_range:
@@ -110,18 +102,6 @@ class LogEntry(object):
             # Don't yield None if the file was empty
             if segment is not None:
                 yield segment
-
-    def save_log_entry_to_db(
-            self, cdn_ip, real_ip, http_method, status_code,
-            request_time, uri, request_datetime, http_referer):
-        try:
-            NginxLogEntry.get_or_create(
-                cdn_ip=cdn_ip, real_ip=real_ip, http_method=http_method,
-                status_code=status_code, request_time=request_time,
-                uri=uri, request_datetime=request_datetime, http_referer=http_referer
-            )
-        except IntegrityError:
-            pass
 
 
 class AnalyseLogs(LogEntry):
