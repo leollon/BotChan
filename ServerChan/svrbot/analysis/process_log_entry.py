@@ -6,18 +6,16 @@ from peewee import IntegrityError
 from ..conf import settings
 from .models import NginxLogEntry
 
-json = getattr(settings, "json")
-datetime = getattr(settings, "datetime")
-log_files_dict = getattr(settings, "LOG_FILES_DICT")
-request_search = getattr(settings, "REQUEST_SEARCH")
-status_code_search = getattr(settings, "STATUS_CODE_SERACH")
-datetime_search = getattr(settings, "DATETIME_SEARCH")
-request_time_search = getattr(settings, "REQUEST_TIME_SEARCH")
-http_referer_search = getattr(settings, "HTTP_REFERER_SEARCH")
-
-ten_mins = getattr(settings, "TEN_MINUTES")
-
+json = settings.json
+datetime = settings.datetime
+log_files_dict = settings.LOG_FILES_DICT
+request_search = settings.REQUEST_SEARCH
+status_code_search = settings.STATUS_CODE_SERACH
+datetime_search = settings.DATETIME_SEARCH
+request_time_search = settings.REQUEST_TIME_SEARCH
+http_referer_search = settings.HTTP_REFERER_SEARCH
 dt_strptime = datetime.strptime
+ten_mins = settings.TEN_MINUTES
 
 
 class LogEntry(object):
@@ -114,9 +112,8 @@ class LogEntry(object):
                 yield segment
 
     def save_log_entry_to_db(
-        self, cdn_ip, real_ip, http_method, status_code,
-        request_time, uri, request_datetime, http_referer
-    ):
+            self, cdn_ip, real_ip, http_method, status_code,
+            request_time, uri, request_datetime, http_referer):
         try:
             NginxLogEntry.get_or_create(
                 cdn_ip=cdn_ip, real_ip=real_ip, http_method=http_method,

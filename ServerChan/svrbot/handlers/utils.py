@@ -2,8 +2,8 @@ from requests import request
 
 from ..conf import settings
 
-Path = getattr(settings, "Path")
-domain_list = getattr(settings, "LOG_FILES_DICT").keys()
+Path = settings.Path
+domain_list = settings.LOG_FILES_DICT.keys()
 user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.79 Safari/537.36'
 
 

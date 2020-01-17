@@ -7,16 +7,15 @@ from ..conf import settings
 from .decorators import auth, make_handler
 from .utils import check_domain, query_ip
 
-Path = getattr(settings, "Path")
-floor = getattr(settings, "floor")
-datetime = getattr(settings, "datetime")
-time = getattr(settings, "time")
-proc_base = Path(getattr(settings, "PROC_DIR", "/proc"))
-ten_mins = getattr(settings, "TEN_MINUTES")
-one_day = getattr(settings, "ONE_DAY")
-seven_days = getattr(settings, "SEVEN_DAYS")
-half_month = getattr(settings, "HALF_MONTH")
-thirty_days = getattr(settings, "THIRTY_DAYS")
+Path = settings.Path
+floor = settings.floor
+datetime = settings.datetime
+proc_base = settings.PROC_DIR
+ten_mins = settings.TEN_MINUTES
+one_day = settings.ONE_DAY
+seven_days = settings.SEVEN_DAYS
+half_month = settings.HALF_MONTH
+thirty_days = settings.THIRTY_DAYS
 
 
 @dispatcher.add_handler
@@ -45,7 +44,7 @@ def resource(update, context):
 @auth
 def uptime(update, context):
     try:
-        with open((proc_base / 'uptime').as_posix(), 'r') as fp:
+        with open(proc_base.joinpath('uptime').as_posix(), 'r') as fp:
             uptime = fp.read()
         uptime = floor(float(uptime.split(' ')[0]))
         now = datetime.now().strftime("%H:%M:%S")
@@ -64,7 +63,7 @@ def uptime(update, context):
 @auth
 def load(update, context):
     loadavg = 'None'
-    with open((proc_base / "loadavg").as_posix(), 'r') as fp:
+    with open(proc_base.joinpath("loadavg").as_posix(), 'r') as fp:
         loadavg = fp.read().strip('\n')
     context.bot.send_message(chat_id=update.effective_chat.id, text=loadavg)
 

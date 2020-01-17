@@ -1,4 +1,3 @@
-import pickle
 from functools import wraps
 
 import click
@@ -6,14 +5,8 @@ import click
 from svrbot.conf import settings
 from svrbot.handlers.utils import is_file
 
-Path = settings.Path
-BASE_DIR = Path(__file__).parent.absolute()
-
-DATA_DIR = BASE_DIR / 'svrbot/data'  # host mapped to log file location configuration
-DATA_DIR.mkdir(mode=0o755, exist_ok=True)  # idempotent operation
-
-log_file_location = (DATA_DIR / 'log_file_location').as_posix()
-Path(log_file_location).touch(mode=0o744)  # idempotent operation
+pickle = settings.pickle
+log_file_location = settings.LOG_FILE_LOCATION
 
 
 def check_aguments(domain, log_file):

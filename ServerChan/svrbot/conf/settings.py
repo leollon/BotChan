@@ -1,19 +1,19 @@
+import pickle
 import re
-import time  # noqa: F401
 from datetime import datetime  # noqa: F401
 from math import floor  # noqa: F401
 from os import environ
 from pathlib import Path  # noqa: F401
 
-import redis
 from peewee import PostgresqlDatabase
 
 try:
     import ujson as json
 except ImportError:
-    import json
+    import json  # noqa: F401
 
-PROC_DIR = "/proc"
+PROC_DIR = Path("/proc")
+BASE_DIR = Path(__file__).parent.parent
 REQUEST_KWARGS = {
     'proxy_url': 'socks5://127.0.0.1:1080',
     'urllib3_proxy_kwargs': {
@@ -29,8 +29,14 @@ psql_db = PostgresqlDatabase(
     port=int(environ.get("POSTGRES_PORT"))
 )
 
-cache_db = redis.Redis(host=environ.get("REDIS_HOST"), port=environ.get("REDIS_PORT"), db=1)
-LOG_FILES_DICT = json.loads(cache_db.get("log_files") or "{}")
+
+DATA_DIR = BASE_DIR / 'data'  # host mapped to log file location configuration
+DATA_DIR.mkdir(mode=0o755, exist_ok=True)  # idempotent operation
+
+LOG_FILE_LOCATION = (DATA_DIR / 'log_file_location').as_posix()
+Path(LOG_FILE_LOCATION).touch(mode=0o744)  # idempotent operation
+LOG_FILES_DICT = pickle.load(open(LOG_FILE_LOCATION, 'rb'))
+
 TEN_MINUTES = 10 * 60 * 1.0
 ONE_DAY = 24 * 3600 * 1.0
 SEVEN_DAYS = 7 * ONE_DAY
