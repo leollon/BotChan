@@ -62,8 +62,9 @@ def remove(domain, log_file):
 @cli.add_command
 @click.command()
 def list():
-
-    click.echo(json.loads(log_files_dict))
+    print('domain\t\t\tlog file path')
+    for domain, path in log_files_dict.items():
+        click.echo(domain + '\t' + path)
 
 
 if __name__ == "__main__":

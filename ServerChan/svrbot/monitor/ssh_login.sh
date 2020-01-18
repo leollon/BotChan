@@ -7,5 +7,5 @@
 tg_bot_token=your-own-bot-token
 chat_id=your-own-chat-id
 
-message=$(hostanme && TZ=UTC-8 date && who && w | awk 'BEGIN{OFS="\t"}{print $1,$8}')
-curl -s "https://api.telegram.org/bot${tg_bot_token}/sendMessage?chat_id=${chat_id}" --data-binary "&text=${message}"
+message=$(hostname && TZ=UTC-8 date && who && w | awk 'BEGIN{OFS="\t"}{print $1,$8}')
+curl -s "https://api.telegram.org/bot${tg_bot_token}/sendMessage?chat_id=${chat_id}" --data-binary "&text=${message}" >> /dev/null
