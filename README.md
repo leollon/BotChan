@@ -58,3 +58,35 @@ python commands.py --domain example.com --log_file /path/to/access.log
 - /last7days example.com
 - /last14days example.com
 - /last30days example.com
+
+## Monitor scripts usage
+
+- ssh_login.sh
+
+```bash
+$ cd ServerChan
+# no output
+$ sudo cp svrbot/monitor/ssh_login.sh /etc/profile.d
+# no output
+$ sudo chmod 755 /etc/profile.d/ssh_login.sh
+# no output
+```
+
+**NOTE:** For **zsh** users
+
+append following script to `/etc/zsh/zprofile` file.
+
+```shell
+if [ -d /etc/profile.d ]; then
+  for i in /etc/profile.d/*.sh; do
+    if [ -r $i ]; then
+      . $i
+    fi
+  done
+  unset i
+fi
+```
+
+Otherwise the ssh_login.sh will not be effective when zsh is your interactive shell.
+
+Wanting to know more details about zsh initial: [zsh_initial_configuration](https://wiki.archlinux.org/index.php/Zsh#Initial_configuration)

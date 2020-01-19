@@ -13,7 +13,7 @@ jq=$(command -v jq)
 
 if [[ "${jq}" == "" ]]
 then
-    message="Install 'jq' at first with apt install jq!";
+    message="Install 'jq' at first, plz!";
 else
     message=$(curl -fL -u ${http_basic_auth} "${flower_dashboard_url}" -o - | jq . - | grep -E "status|hostname" | tr -d " ,")
 fi
