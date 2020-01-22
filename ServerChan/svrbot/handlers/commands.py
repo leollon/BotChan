@@ -3,9 +3,9 @@ from telegram.ext import CommandHandler
 
 from .. import dispatcher
 from ..analysis.process_log_entry import AnalyseLogs
+from ..commons import check_domain, query_ip
 from ..conf import settings
 from .decorators import auth, make_handler
-from .utils import check_domain, query_ip
 
 Path = settings.Path
 floor = settings.floor

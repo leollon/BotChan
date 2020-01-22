@@ -2,8 +2,8 @@ from functools import wraps
 
 import click
 
+from svrbot.commons import is_file
 from svrbot.conf import settings
-from svrbot.handlers.utils import is_file
 
 cache = settings.cache
 json = settings.json

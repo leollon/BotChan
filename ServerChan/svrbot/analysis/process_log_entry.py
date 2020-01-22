@@ -1,6 +1,7 @@
 import os
 from collections import Counter, defaultdict
 
+from ..commons import serialize
 from ..conf import settings
 
 json = settings.json
@@ -106,12 +107,6 @@ class LogEntry(object):
 
 class AnalyseLogs(LogEntry):
 
-    @staticmethod
-    def serialize(data, indent=4):
-        if isinstance(data, dict):
-            return json.dumps(data, indent=indent)
-        return data
-
     def start_analyse(self, domain, start_datetime='', datetime_range=ten_mins):
         self.get_data_from_logs(
             start_datetime=start_datetime,
@@ -128,9 +123,9 @@ class AnalyseLogs(LogEntry):
             real_ips.update(Counter(self.data.get(uri).get("real_ips")))
             ip_not_through_cdn.update(Counter(self.data.get(uri, {}).get("ip_not_through_cdn", {}).get("real_ips", [])))
             uri_clicks.setdefault(uri, len(self.data.get(uri).get("real_ips")))
-        real_ips = self.serialize(dict(real_ips.most_common(10)))
-        ip_not_through_cdn = self.serialize(dict(ip_not_through_cdn.most_common(10)))
-        uri_clicks = self.serialize(dict(sorted(uri_clicks.items(), key=lambda t: t[1], reverse=True)[:10]))
+        real_ips = serialize(dict(real_ips.most_common(10)))
+        ip_not_through_cdn = serialize(dict(ip_not_through_cdn.most_common(10)))
+        uri_clicks = serialize(dict(sorted(uri_clicks.items(), key=lambda t: t[1], reverse=True)[:10]))
         result = "2xx: {0}\n3xx: {1}\n4xx: {2}\nreal_ips: {3}\nip_not_through_cdn: {4}\nuri_clicks: {5}\n".format(
             twoxx, threexx, fourxx, real_ips, ip_not_through_cdn, uri_clicks
         )
